@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <meta content="email=no" name="format-detection">
+    <link rel="stylesheet" type="text/css" href="../nsu/css/common.css">
+    <link rel="stylesheet" type="text/css" href="../luke/css/mint.css">
+    <link rel="stylesheet" href="../buy/css/fonts/iconfont.css">
+    <link >
+    <title>注册</title>
+    <style>
+        input[type="tel"]{
+            margin-left: 0.3rem;
+        }
+        input {
+
+            border: none;
+            background: none;
+            width: 4.5rem;
+        }
+        .contain{
+            padding-top: 0.8rem;
+        }
+        .form-list{
+            padding: 0 0.5rem;
+        }
+        .list-item{
+            height: .88rem;
+            line-height: .88rem;
+            margin-bottom: 0.4rem;
+            border:  1px solid #979797;
+            border-radius: .6rem;
+        }
+        .list-icon{
+            margin-left: .3rem;
+            font-size: 0.48rem;
+            color: #2864AA;
+            vertical-align: middle;
+        }
+        .input-item{
+            margin-left: .3rem;
+            font-size: 0.26rem;
+            vertical-align: middle;
+        }
+
+        .submit{
+            height: 0.88rem;
+            width: 3.72rem;
+            margin: .88rem auto 0 auto;
+            line-height: 0.88rem;
+            font-size:0.34rem ;
+            color: #fff;
+            text-align: center;
+            background: #2864AA;
+            border-radius: 0.5rem;
+        }
+        .verifice{
+            display: inline-block;
+            float: right;
+            margin: 0.08rem;
+            width: 2.06rem;
+            height: .72rem;
+            line-height: 0.72rem;
+            font-size: .26rem;
+        }
+        .icon-roundcheck{
+            display: block;
+            margin:3.14rem auto 0.46rem auto ;
+            text-align: center;
+            color: #2864AA;
+            font-size: 2.5rem;
+        }
+        .register-complete{
+
+            margin: auto;
+            text-align: center;
+            color: #2864AA;
+            font-size: 0.48rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak="display:none">
+    <div v-if="step==1">
+        <div class="contain" >
+            <ul class="form-list">
+                <li class="list-item">
+                    <i class="iconfont icon-mobile list-icon"></i>
+                    <input class="input-item" type="tel" placeholder="请输入您的手机号码" v-model="model.phone">
+                </li>
+                <li class="list-item">
+                    <i class="iconfont icon-safe list-icon"></i>
+                    <input class="input-item" style="width: 3rem" v-model="model.phcode" placeholder="请输入验证码">
+                    <div class="submit verifice" @click="getCode">发送验证码</div>
+                </li>
+                <li class="list-item">
+                    <i class="iconfont icon-unlock list-icon"></i>
+                    <input class="input-item" type="password" placeholder="请输入密码" v-model="model.pwd">
+                </li>
+                <li class="list-item">
+                    <i class="iconfont icon-lock list-icon"></i>
+                    <input class="input-item" type="password" v-model="pwd2" placeholder="请再次输入密码">
+                </li>
+            </ul>
+        </div>
+        <div class="submit" @click="submit">提交</div>
+    </div>
+    <div v-if="step == 2">
+        <i class="iconfont icon-roundcheck"></i>
+        <div class="register-complete">
+            注册完成
+        </div>
+    </div>
+</div>
+<script>
+    (function (doc, win) {
+        var docEl = doc.documentElement,
+            resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+            recalc = function () {
+                var clientWidth = docEl.clientWidth;
+                if (!clientWidth) return;
+                if (clientWidth > 640) clientWidth = 640;
+                docEl.style.fontSize = (clientWidth / 7.5) + 'px';
+            };
+
+        if (!doc.addEventListener) return;
+        win.addEventListener(resizeEvt, recalc, false);
+        doc.addEventListener('DOMContentLoaded', recalc, false);
+    })(document, window);
+</script>
+<script type="text/javascript" src="js/vue.min.js"></script>
+<script type="text/javascript" src="js/mint.js"></script>
+<script type="text/javascript" src="js/axios.js"></script>
+<script type="text/javascript" src="js/qs.js"></script>
+<script type="text/javascript" src="js/md5.min.js"></script>
+<script>
+    var file;
+    var hash = md5("value");
+    console.log(hash);
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            step:1,
+            img: 'img/ow.png',
+            model:{
+                phone:'',
+                pwd:'',
+                phcode:''
+
+            },
+            pwd2:''
+        },
+        methods: {
+            setImagePreview: function (e) {
+                var fr = new FileReader();
+                file = e.target.files[0];
+//                var file = document.querySelector('input').files[0];
+                fr.readAsDataURL(file);
+                fr.onload = function(it) {
+                    vm.img = it.target.result;
+                };
+            },
+            getCode: function () {
+                var data = Qs.stringify({'phone':this.model.phone});
+                axios.post('../route/ddl_ctrl.php?luke&log&sendValidateCode',data)
+                    .then(function (response) {
+                        console.log('-----' + JSON.stringify(response));
+                        if (response.data.isSuccess) {
+                            vm.$toast("获取成功")
+                        } else {
+                            vm.$toast(response.data.errorMsg)
+                        }
+                        console.log(response);
+                    }).catch(function (error) {
+                    console.log(error)
+                })
+            },
+            submit: function () {
+//                var form = new FormData();
+//                form.append('img',file);
+//                form.append('lala','dd');
+                if(!(/^1[34578]\d{9}$/.test(this.model.phone))){
+                    this.$toast("请输入正确的电话格式")
+                    return;
+                }else if(this.model.phcode.length == 0){
+                    this.$toast("请输入验证码")
+                    return;
+                }else if(this.model.pwd == 0){
+                    this.$toast("请输入密码")
+                    return;
+                }else if(this.model.pwd.length < 6){
+                    this.$toast("请输入密码不小于六位")
+                    return;
+                }else if(this.model.pwd.length > 13){
+                    this.$toast("请输入密码不大于13位")
+                    return;
+                }else if(this.model.pwd2 == 0){
+                    this.$toast("请确认密码")
+                    return;
+                }else if(this.pwd2 != this.model.pwd){
+                    this.$toast("请确认输入的密码一致")
+                    return;
+                }
+                var pwd = md5(vm.model.pwd)
+                var data  = {
+                    phone:this.model.phone,
+                    pwd:pwd,
+                    phcode:this.model.phcode
+                }
+                data = Qs.stringify(data);
+                axios.post('../route/ddl_ctrl.php?luke&log&registGuest', data)
+                    .then(function (response) {
+                        console.log('-----' + JSON.stringify(response));
+                        if (response.data.isSuccess) {
+                            vm.step = 2;
+                        } else {
+                            vm.$toast(response.data.errorMsg)
+                        }
+                        console.log(response);
+                    }).catch(function (error) {
+                    console.log(error)
+                })
+            }
+        }
+    })
+</script>
+</body>
+</html>

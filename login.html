@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <meta content="email=no" name="format-detection">
+    <title>路客</title>
+    <link rel="stylesheet" type="text/css" href="../nsu/css/common.css">
+    <link rel="stylesheet" type="text/css" href="../luke/css/mint.css">
+    <link rel="stylesheet" href="../buy/css/fonts/iconfont.css">
+    <style>
+        /*
+        *位置
+        *大小
+        *字体
+        *背景
+        *动画
+        */
+        input[type="tel"]{
+            margin-left: 0.3rem;
+        }
+        input {
+            border: none;
+            background: none;
+            color: #fff;
+            width: 4.5rem;
+        }
+        ::-webkit-input-placeholder { /* WebKit browsers */
+            color:    #fff;
+        }
+        :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+            color:    #fff;
+        }
+        ::-moz-placeholder { /* Mozilla Firefox 19+ */
+            color:    #fff;
+        }
+        :-ms-input-placeholder { /* Internet Explorer 10+ */
+            color:    #fff;
+        }
+        .form-list{
+            padding: 3rem 0.5rem 0 0.5rem;
+        }
+        .list-item{
+            height: .88rem;
+            line-height: .88rem;
+            margin-bottom: 0.4rem;
+            border-radius: .6rem;
+            background: rgba(0,0,0,0.2);
+        }
+        .list-icon{
+            margin-left: .3rem;
+            font-size: 0.48rem;
+            color: #fff;
+            vertical-align: middle;
+        }
+        .input-item{
+            margin-left: .3rem;
+            font-size: 0.26rem;
+            vertical-align: middle;
+        }
+        .submit{
+            height: 0.88rem;
+            width: 3.72rem;
+            margin: .88rem auto 0 auto;
+            line-height: 0.88rem;
+            font-size:0.34rem ;
+            color: #fff;
+            text-align: center;
+            background: #2864AA;
+            border-radius: 0.5rem;
+        }
+        .text-center{
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak="display:none">
+    <div class="contain" >
+        <ul class="form-list">
+            <li class="list-item">
+                <i class="iconfont icon-mobile list-icon"></i>
+                <input class="input-item" type="tel" placeholder="请输入您的手机号码" v-model="model.phone">
+            </li>
+            <li class="list-item">
+                <i class="iconfont icon-unlock list-icon"></i>
+                <input class="input-item" type="password" placeholder="请输入密码" v-model="model.pwd">
+            </li>
+        </ul>
+        <div class="submit" @click="submit">提交</div>
+        <a href="../luke/register.html"><div class="text-center">没有账号？立即注册</div></a>
+    </div>
+</div>
+<script>
+    (function (doc, win) {
+        var docEl = doc.documentElement,
+            resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+            recalc = function () {
+                var clientWidth = docEl.clientWidth;
+                if (!clientWidth) return;
+                if (clientWidth > 640) clientWidth = 640;
+                docEl.style.fontSize = (clientWidth / 7.5) + 'px';
+            };
+
+        if (!doc.addEventListener) return;
+        win.addEventListener(resizeEvt, recalc, false);
+        doc.addEventListener('DOMContentLoaded', recalc, false);
+    })(document, window);
+</script>
+<script type="text/javascript" src="./js/vue.min.js"></script>
+<script type="text/javascript" src="js/mint.js"></script>
+<script type="text/javascript" src="js/axios.min.js"></script>
+<script type="text/javascript" src="js/qs.js"></script>
+<script type="text/javascript" src="js/md5.min.js"></script>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            model:{
+                phone:'',
+                pwd:''
+            },
+        },
+        methods: {
+            submit: function () {  // 表单提交
+                if(!(/^1[34578]\d{9}$/.test(this.model.phone))){
+                    this.$toast("请输入正确的电话格式")
+                    return;
+                }else if(this.model.pwd.length == 0){
+                    this.$toast("请输入密码")
+                    return;
+                }
+                var pwd= md5(vm.model.pwd)
+                var data = {'pwd':pwd,'name':this.model.phone}
+                data = Qs.stringify(data);
+                axios.post('../route/ddl_ctrl.php?luke&log&loginGuest', data)
+                    .then(function (response) {
+                        console.log('-----' + JSON.stringify(response));
+                        if (response.data.isSuccess) {
+
+                        } else {
+                            vm.$toast("请输入密码")
+                        }
+                        console.log(response);
+                    }).catch(function (error) {
+                    console.log(error)
+                })
+            },
+            goLonin: function () {
+              console.log('goLonin')
+                this.status = "login"
+            },
+            goRegister: function () {
+                this.status = "register"
+            },
+            verificeCode: function () {
+                console.log('verifice')
+            }
+
+        },
+        created: function () {
+        },
+        mounted: function () {
+            console.log('hello2')
+        }
+
+    })
+</script>
+</body>
+</html>

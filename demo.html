@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <meta content="email=no" name="format-detection">
+    <title>你好</title>
+    <style>
+        input {
+
+            border: none;
+            background: none;
+        }
+        .upload{
+            height: 2rem;
+            width: 2rem;
+            border-radius: 50%;
+        }
+        .upload-img{
+            height: 2rem;
+            width: 2rem;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak="display:none">
+    <div class="upload" onclick="document.querySelector('input').click()">
+        <img class="upload-img" :src="img">
+        <input type="file" style="display: none" v-on:change="setImagePreview(event);">
+    </div>
+    <div class="submit" @click="submit">submit</div>
+</div>
+<script>
+    (function (doc, win) {
+        var docEl = doc.documentElement,
+            resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+            recalc = function () {
+                var clientWidth = docEl.clientWidth;
+                if (!clientWidth) return;
+                if (clientWidth > 640) clientWidth = 640;
+                docEl.style.fontSize = (clientWidth / 7.5) + 'px';
+            };
+
+        if (!doc.addEventListener) return;
+        win.addEventListener(resizeEvt, recalc, false);
+        doc.addEventListener('DOMContentLoaded', recalc, false);
+    })(document, window);
+</script>
+<script type="text/javascript" src="js/vue.min.js"></script>
+<script type="text/javascript" src="js/axios.js"></script>
+<script>
+var file;
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            img: 'img/ow.png'
+        },
+        methods: {
+            setImagePreview: function (e) {
+                var fr = new FileReader();
+                file = e.target.files[0];
+//                var file = document.querySelector('input').files[0];
+
+                fr.onload = function(it) {
+                    vm.img = it.target.result;
+                };
+                fr.readAsDataURL(file);
+            },
+            submit: function () {
+                var form = new FormData();
+                form.append('img',file);
+                form.append('lala','dd');
+                axios.post('../route/ddl_ctrl.php?nsu&index&postInviteCode', form
+                    ,{ headers: {'Content-Type': 'multipart/form-data'}})
+                    .then(function (response) {
+                        console.log('-----' + JSON.stringify(response));
+                        if (response.data.isSuccess) {
+                            vm.step = 2;
+                        } else {
+                            vm.showAlert(response.data.errorMsg);
+                            console.log(JSON.stringify(response.data.errorMsg))
+                        }
+                        console.log(response);
+                    }).catch(function (error) {
+                    console.log(error)
+                })
+            }
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <meta content="email=no" name="format-detection">
+    <link rel="stylesheet" type="text/css" href="../luke/css/common.css">
+    <link rel="stylesheet" href="../buy/css/fonts/iconfont.css">
+    <link rel="stylesheet" href="../luke/css/mint.css">
+    <link rel="stylesheet" href="../luke/components/area-select.css">
+    <link >
+    <title>个人信息</title>
+    <style>
+        input[type="tel"]{
+            margin-left: 0.3rem;
+        }
+        input {
+
+            border: none;
+            background: none;
+        }
+        .contain{
+            position: absolute;
+            top: 0rem;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            margin:  auto;
+            padding: 0.8rem 0 1rem 0;
+            overflow: auto;
+        }
+        .form-list{
+            padding: 1.08rem 0.5rem;
+        }
+        .user-img{
+            width: 2rem;
+            height: 2rem;
+            margin: auto;
+            text-align: center;
+            color: #6E6E6E;
+            border:  1px solid #979797;
+            border-radius: 50%;
+            box-sizing: content-box;
+        }
+        .user-add {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.76rem
+
+        }
+        .upload-img{
+            width: 2rem;
+            height: 2rem;
+        }
+        .user-img-text{
+            display: inline-block;
+            margin-top: 0.18rem;
+        }
+        .list-item{
+            height: .88rem;
+            line-height: .88rem;
+            margin-bottom: 0.4rem;
+            border:  1px solid #979797;
+            border-radius: .6rem;
+        }
+        .list-icon{
+            margin-left: .3rem;
+            font-size: 0.48rem;
+            color: #2864AA;
+            vertical-align: middle;
+        }
+        .input-item{
+            margin-left: .3rem;
+            font-size: 0.26rem;
+            vertical-align: middle;
+        }
+
+        .submit{
+            height: 0.88rem;
+            width: 3.72rem;
+            margin: 9.84rem auto 0 auto;
+            line-height: 0.88rem;
+            font-size:0.34rem ;
+            color: #fff;
+            text-align: center;
+            background: #2864AA;
+            border-radius: 0.5rem;
+        }
+        .verifice{
+            display: inline-block;
+            float: right;
+            margin: 0.08rem;
+            width: 2.06rem;
+            height: .72rem;
+            line-height: 0.72rem;
+            font-size: .26rem;
+        }
+        .right-icon{
+            float: right;
+            margin-right: 0.4rem;
+        }
+        .input-color-1{
+            color: #828482;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+
+        }
+        .input-color{
+            color:#000 ;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak="display:none">
+    <div class="contain">
+        <div class="user-img" onclick="document.querySelector('.image-input').click()">
+            <i class="user-add iconfont icon-add_light" v-if="!img"></i>
+            <div class="user-img-text" v-if="!img">添加头像</div>
+            <img class="upload-img" :src="img" v-if="img" style="border-radius: 50%;">
+            <input type="file" style="display: none" class="image-input" v-on:change="setImagePreview(event);">
+        </div>
+        <ul class="form-list">
+            <li class="list-item">
+                <i class="icon-my_light  iconfont list-icon"></i>
+                <input class="input-item" type="tel" placeholder="请输入您的昵称">
+            </li>
+            <li class="list-item">
+                <i class="iconfont icon-location_light list-icon"></i>
+                <div class="input-item input-color-1" @click="SHOWAREA" style="display:inline-block;width: 4.5rem;" :class="{'input-color':address!='请选择您的地区'}" >{{address}}</div>
+                <!--<input class="input-item" style="width: 3rem" readOnly =  "readOnly" placeholder="请选择您的地区" @click="SHOWAREA" >-->
+                <i class="iconfont icon-triangledownfill right-icon" @click="SHOWAREA"></i>
+            </li>
+            <li class="list-item">
+                <i class="iconfont icon-form_light list-icon"></i>
+                <div class="input-item input-color-1" @click="openPicker" style="display:inline-block;width: 4.5rem;" :class="{'input-color': TIMESLECT}" >{{TIMESLECT?showTime:pickerValue1}}</div>
+                <!--<input class="input-item" placeholder="请选择出生日期"  :value="showTime">-->
+                <i class="iconfont icon-triangledownfill right-icon" @click="openPicker"></i>
+            </li>
+            <li class="list-item">
+                <i class="iconfont icon-write list-icon"></i>
+                <input class="input-item" placeholder="请填写您的个性签名">
+            </li>
+        </ul>
+
+    </div>
+    <div class="submit" @click="submit">提交</div>
+    <area-select :data="areaList" :status="areaSelect" @areashow="maskStatus" :class="{'none':!areaSelect}"></area-select>
+    <mt-datetime-picker
+            ref="picker"
+            type="date"
+            :start-date="startDate"
+            year-format="{value} 年"
+            month-format="{value} 月"
+            date-format="{value} 日"
+            v-model="pickerValue">
+    </mt-datetime-picker>
+</div>
+<script>
+    (function (doc, win) {
+        var docEl = doc.documentElement,
+            resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+            recalc = function () {
+                var clientWidth = docEl.clientWidth;
+                if (!clientWidth) return;
+                if (clientWidth > 640) clientWidth = 640;
+                docEl.style.fontSize = (clientWidth / 7.5) + 'px';
+            };
+
+        if (!doc.addEventListener) return;
+        win.addEventListener(resizeEvt, recalc, false);
+        doc.addEventListener('DOMContentLoaded', recalc, false);
+    })(document, window);
+</script>
+<script type="text/javascript" src="../luke/js/vue.min.js"></script>
+<script type="text/javascript" src="../luke/js/mint.js"></script>
+<script type="text/javascript" src="../luke/js/axios.js"></script>
+<script type="text/javascript" src="../luke/components/area-select.js"></script>
+<script>
+    Date.prototype.Format = function (fmt) { //author: meizz
+        var o = {
+            "M+": this.getMonth() + 1, //�·�
+            "d+": this.getDate(), //��
+            "h+": this.getHours(), //Сʱ
+            "m+": this.getMinutes(), //��
+            "s+": this.getSeconds(), //��
+            "q+": Math.floor((this.getMonth() + 3) / 3), //����
+            "S": this.getMilliseconds() //����
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    };
+    var file;
+    var ADDRESS;
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            img: 'img/ow.png',
+            address:"请选择您的地区",
+            img: false,
+            areaList:[],
+            areaSelect:false,
+            TIMESLECT:false,
+            pickerValue1:'请选择出生日期',
+            pickerValue:new Date(),
+            startDate: new Date(new Date().getFullYear() - 40, 0, 1)
+        },
+        computed: {
+            showTime: function(){
+                return (this.pickerValue).Format("yyyy-M-d")
+            }
+        },
+        methods: {
+            setImagePreview: function (e) {
+                var fr = new FileReader();
+                file = e.target.files[0];
+//                var file = document.querySelector('input').files[0];
+                fr.readAsDataURL(file);
+                fr.onload = function(it) {
+                    vm.img = it.target.result;
+                };
+            },
+            submit: function () {
+                console.log(this.areaList)
+                var form = new FormData();
+                form.append('img',file);
+                form.append('lala','dd');
+                axios.post('../route/ddl_ctrl.php?nsu&index&postInviteCode', form
+                    ,{ headers: {'Content-Type': 'multipart/form-data'}})
+                    .then(function (response) {
+                        console.log('-----' + JSON.stringify(response));
+                        if (response.data.isSuccess) {
+                            vm.step = 2;
+                        } else {
+                            vm.showAlert(response.data.errorMsg);
+                        }
+                    }).catch(function (error) {
+                })
+            },
+            SHOWAREA: function () {
+                this.areaSelect = !this.areaSelect;
+                console.log('8888888888888')
+            },
+            maskStatus: function (data) {
+                if(ADDRESS.province != '请选择'){
+                    this.address = ADDRESS.province + ADDRESS.city + ADDRESS.region;
+                }
+                this.areaSelect = !this.areaSelect;
+            },
+            setImagePreview: function (e) {
+                var fr = new FileReader();
+                file = e.target.files[0];
+//                var file = document.querySelector('input').files[0];
+                fr.readAsDataURL(file);
+                fr.onload = function(it) {
+                    vm.img = it.target.result;
+                };
+            },
+            openPicker: function() {
+                this.$refs.picker.open();
+                this.TIMESLECT = true;
+            }
+        },
+        created:function () {
+
+        }
+    })
+    axios.get('../luke/components/data1.json')
+        .then(function (response) {
+            vm.areaList = response.data;
+            console.log(response);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+</script>
+</body>
+</html>
